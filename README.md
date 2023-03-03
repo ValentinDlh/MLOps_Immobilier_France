@@ -5,9 +5,9 @@ Ce projet s'inscrit dans le cadre de notre formation MLOps au sein de l'organism
 L'objectif de ce projet est de développer une solution de prédiction du prix d’un appartement ou d’une maison en France en utilisant un modèle de machine learning. Cette solution sera accessible via une API avec FastAPI, authentification des utilisateurs, une base de données SQL pour le backend, et conteneurisée avec Docker. La solution sera testée et monitorée de manière périodique, aura un pipeline CI/CD, et une interface Web Front sera créée pour permettre aux utilisateurs d'utiliser l'outil. Le déploiement sera effectué sur AWS avec un lien public pour se connecter.
 
 ## Objectifs
-  •	Développer un modèle de machine learning pour la prédiction de prix immobilier en France
-  •	Implémenter des tests unitaires cohérents pour garantir la qualité du modèle
-  •	Créer une API avec FastAPI pour gérer les prédictions et l'authentification des utilisateurs
+•	Développer un modèle de machine learning pour la prédiction de prix immobilier en France  
+•	Implémenter des tests unitaires cohérents pour garantir la qualité du modèle
+•	Créer une API avec FastAPI pour gérer les prédictions et l'authentification des utilisateurs
 •	Créer une base de données SQL pour stocker les données de l'API en backend
 •	Conteneuriser l'API avec Docker et isoler la partie API et BDD
 •	Tester et monitorer de manière périodique l'évolution du projet
