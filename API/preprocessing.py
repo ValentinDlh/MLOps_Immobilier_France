@@ -1,34 +1,33 @@
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-transactions = pd.read_csv("Data/transactions_2021_2022.csv")
+# Retourne la liste des départements contenu dans transactions
+def get_departements(transactions):
+    departements = list(transactions["departement"].unique())
+    return departements
 
-def data_selection(date, periode, departement, ville):
-    """
-    Renvoie une base de données ciblée en fonction des données temporelles et de géolocalisation.
-    """
-    # Récupérer la date initiale pour délimiter la période de transactions
-    transactions['date_transaction'] = pd.to_datetime(transactions['date_transaction'])
-    date = pd.to_datetime(date)
-    date_init = date - pd.DateOffset(months=periode)
-    df = transactions[(transactions['date_transaction'] >= date_init) & (transactions['date_transaction'] <= date)]
-    
-    # Récupérer les transactions d'appartements de la ville et du département concerné
-    df = df[(transactions["departement"]==departement) & (df["ville"]==ville) & (df["type_batiment"]=="Appartement")]
-    
-    return df
+# Retourne la liste des villes d'un département donné contenu dans transactions
+def get_villes(transactions, departement):
+    villes = list(transactions[transactions["departement"]==departement]["villes"].unique())
+    return villes
 
+# Retourne la liste des quartiers d'une ville donnée contenu dans transactions
+def get_quartiers(transactions, ville):
+    quartiers = list(transactions[transactions["villes"]==ville]["NOM_IRIS"].unique())
+    return quartiers
 
+# Renvoie une base de données ciblée en fonction des données de géolocalisation
+def data_selection(transactions, departement, ville, quartier):
+    transactions = transactions[(transactions["departement"]==departement) & (transactions["ville"]==ville) & (transactions["NOM_IRIS"] == quartier)]
+    return transactions
+
+# Renvoie une base de données transformée à partir du dataset de la fonction data_selection
 def data_transformation(df):
-    """
-    Renvoie une base de données transformée à partir du dataset de la fonction data_selection.
-    """
+    
     # Feature Selection
     df = df[["prix", "vefa", "n_pieces", "surface_habitable"]]
     
     # One Hot Encoding
-    df = df.replace({"Appartement":0, "Maison":1})
     df["vefa"] = df["vefa"].astype(int)
     
     # Détermination des float min et max
@@ -44,5 +43,5 @@ def data_transformation(df):
     df_scaled = pd.DataFrame(scaler.fit_transform(df))
     df_scaled = df_scaled.rename(columns=dict(zip(df_scaled.columns, df.columns)))
     
-    # Retourner le dataset transformé ainsi que les valeurs minimales et maximales pour renvoyer la bonne prédiction future
+    # Retourne le dataset transformé ainsi que les valeurs minimales et maximales pour renvoyer la bonne prédiction future
     return df_scaled, prix_min, prix_max, n_pieces_min, n_pieces_max, surface_habitable_min, surface_habitable_max

@@ -8,16 +8,14 @@ import pandas as pd
 import numpy as np
 import random
 
-from preprocessing import data_selection, data_transformation
+import preprocessing
 from modelisation import best_estimator
 from prediction import prediction
 
 # Importation des données
-transactions = pd.read_csv("Data/transactions_2021_2022.csv")
-departements = sorted(list(transactions["departement"].unique()))
+transactions = pd.read_csv("Data/BD_Transaction_import.csv", delimiter=';')
 
 # Description des endpoints de l'API
-description_villes = f"il faut renseigner le numéro du département parmi les choix suivants : {departements}"
 description_transactions = f"il faut renseigner une date au format aaaa-mm-jj \
             , une période en mois, le numéro du département et le nom de la ville en majuscule (voir la section GET VILLES)."
 
@@ -78,21 +76,34 @@ def current_user(username: str = Depends(get_current_user)):
 def get_index():
     return "L'API est fonctionnelle"
 
-@api.get('/departements/villes', tags=["Géolocalisation"], description="Obtenir les villes d'un département: "+description_villes, responses=responses)
+@api.get('/departements', tags=["Géolocalisation"], description="Obtenir les départements", responses=responses)
+def get_departements():
+    departements = {}
+    departements["departements"] = sorted(preprocessing.get_departements(transactions))
+    return departements
+
+@api.get('/departements/villes', tags=["Géolocalisation"], description="Retourne les villes du département renseigné (voir la liste des numéros de départements via la requête get_departements)", responses=responses)
 def get_villes(departement: int):
     villes = {}
-    villes["departement"] = sorted(list(transactions[transactions["departement"]==departement]["ville"].unique()))
+    villes["villes"] = sorted(preprocessing.get_villes(transactions, departement))
     return villes
 
+@api.get('/departements/quartiers', tags=["Géolocalisation"], description="Retourne les quartiers de la ville renseignée (voir la liste des villes via la requête get_villes)", responses=responses)
+def get_quartiers(ville: int):
+    quartiers = {}
+    quartiers["quartiers"] = sorted(preprocessing.get_quartiers(transactions, ville))
+    return quartiers
+
 @api.get('/transactions', tags=["Transactions"], description="Retourne les transactions spécifiques à une période et à une ville: "+description_transactions, responses=responses)
-def get_transactions(date : str, periode : int, departement : int, ville : str):
-    df = data_selection(date, periode, departement, ville)
+def get_transactions(departement : int, ville : str, quartier : str):
+    df = preprocessing.data_selection(transactions, departement, ville, quartier)
+    df = df[["date_transaction", "prix", "departement", "adresse", "ville", "code_postal", "vefa", "n_pieces", "surface_habitable", "NOM_IRIS"]]
     return df.to_dict()
 
 @api.get('/predictions', tags=["Prédictions"], description="Retourne la prédiction du prix d'un appartement avec un intervalle de confiance", responses=responses)
-def get_prediction(date : str, periode : int, departement : int, ville : str, vefa : str, n_pieces : int, surface_habitable : int):
+def get_prediction(departement : int, ville : str, quartier : str, vefa : str, n_pieces : int, surface_habitable : int):
     predictions = {}
-    prediction_prix, mae_train, mae_test, model, params = prediction(date, periode, departement, ville, vefa, n_pieces, surface_habitable)
+    prediction_prix, mae_train, mae_test, model, params = prediction(transactions, departement, ville, quartier, vefa, n_pieces, surface_habitable)
     predictions["prediction_prix"] = prediction_prix[0]
     predictions["intervalle_confiance_montant"] = mae_test
     predictions["intervalle_confiance_ratio"] = mae_test/prediction_prix[0]
