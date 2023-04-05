@@ -3,12 +3,12 @@ from sklearn.metrics import median_absolute_error
 from preprocessing import data_selection, data_transformation
 from modelisation import best_estimator
 
-def prediction(date, periode, departement, ville, vefa, n_pieces, surface_habitable):
+def prediction(transactions, departement, ville, quartier, vefa, n_pieces, surface_habitable):
     """
     Renvoie la prédiction de notre modèle basé sur les inputs de l'utilisateur.
     """
     # Détermination du dataset transactions transformé et récupération des valeurs max et min des variables
-    df = data_selection(date, periode, departement, ville)
+    df = data_selection(transactions, departement, ville, quartier)
     df_scaled, prix_min, prix_max, n_pieces_min, n_pieces_max, surface_habitable_min, surface_habitable_max = data_transformation(df)
     
     # Transformation des inputs de l'utilisateur

@@ -12,8 +12,8 @@ def optimize_linear_regression(X, y):
     parameters = {'fit_intercept': [True, False],
                   'copy_X': [True, False]}
 
-    # Optimisation des hyperparamètres basé sur la rmse
-    grid_search = GridSearchCV(model, parameters, cv=5, scoring='neg_root_mean_squared_error')
+    # Optimisation des hyperparamètres basé sur la médiane absolute error
+    grid_search = GridSearchCV(model, parameters, cv=5, scoring='neg_median_absolute_error')
     grid_search.fit(X, y)
 
     return grid_search.best_estimator_, grid_search.best_params_, -1*grid_search.best_score_
@@ -28,8 +28,8 @@ def optimize_elastic_net(X, y):
 
     elastic_net = ElasticNet()
 
-    # Optimisation des hyperparamètres basé sur la rmse
-    grid_search = GridSearchCV(elastic_net, param_grid, cv=5, scoring='neg_root_mean_squared_error')
+    # Optimisation des hyperparamètres basé sur la médiane absolute error
+    grid_search = GridSearchCV(elastic_net, param_grid, cv=5, scoring='neg_median_absolute_error')
     grid_search.fit(X, y)
 
     return grid_search.best_estimator_, grid_search.best_params_, -1*grid_search.best_score_
@@ -42,7 +42,7 @@ def best_estimator(X, y):
     model_LR, params_LR, score_LR = optimize_linear_regression(X, y)
     model_EN, params_EN, score_EN = optimize_elastic_net(X, y)
 
-    # On retourne le modèle qui donne une rmse la plus faible
+    # On retourne le modèle qui donne une médiane absolute error la plus faible
     if score_LR < score_EN:
         return model_LR, params_LR
     else:
