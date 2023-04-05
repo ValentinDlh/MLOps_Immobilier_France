@@ -40,19 +40,9 @@ def extract_from_DB_to_df(col):
     df=df[col]
     return df
 
-def agg_from_DB_to_df(condition: dict, col):
-    #l=[]
-    #retourne liste dpt, list quartier pour un dpt
-    #df = pd.DataFrame.from_dict(json.loads(dumps(collection.find(condition))))
-    #df.set_index(['id_transaction'])
-    #df = df[col]
-    return None
 
 def generate_tdb_quartier():
-    return None
-
-    #return collection.find(condition)
-
+    
 #ajouter une colonne dans la BD prix/moyen par m²
 #Créer nouvelle table
 #_id
@@ -63,31 +53,35 @@ def generate_tdb_quartier():
 #ecart_type m²
 #Volume transac
 #
+    return None
 
-'''class Transaction(BaseModel):
 
-    #ID : StringField(default=str(ObjectIdField()))
-    #adresse:str
-    #code_postal:int
-    #date_transaction:date
-    #DCOMIRIS:str
-    #departement:str
-    #prix:Optional[float]=None
-    #surface_habitable:int
-    #DEPCOM:str
-    #geometry:Point
-    #id_transaction:str
-    #id_ville:int
-    #IRIS:str
-    #latitude:str
-    #longitude:str
-    #n_pieces:Optional[int]=None
-    #NOM_COM:str
-    #NOM_IRIS:Optional[str]=None
-    #TYPE_IRIS:Optional[str]=None
-    #type_batiment:Optional[str]=None
-    #vefa:Optional[bool]
-    #ville:str'''
+
+
+'''class Transaction():
+    def __init__(self,vefa:boolean,type_batiment:str,TYPE_IRIS:str,NOM_IRIS:str,NOM_COM:str,n_pieces:int,latitude:str,longitude:str,IRIS:str,prix:float,code_postal:int,date_transaction:datetime.date,DCOMIRIS:str,departement:str,adresse:str,surface_habitable:int,geometry:str,id_transaction:str,id_ville:int):
+
+    #self._id=id
+    #self.adresse=adresse
+    #self.code_postal=code_postal
+    #self.date_transaction=date_transaction
+    #self.DCOMIRIS=DCOMIRIS
+    #self.departement=departement
+    #self.prix=prix
+    #self.surface_habitable=surface_habitable
+    #self.geometry=geometry
+    #self.id_transaction=id_transaction
+    #self.id_ville=id_ville
+    #self.IRIS=IRIS
+    #self.latitude=latitude
+    #self.longitude=longitude
+    #self.n_pieces:int
+    #self.NOM_COM=NOM_COM
+    #self.NOM_IRIS:str
+    #self.TYPE_IRIS=TYPE_IRIS
+    #self.type_batiment=type_batiment
+    #self.vefa=vefa
+
 
 
 
