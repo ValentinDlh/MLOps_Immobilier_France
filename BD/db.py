@@ -1,10 +1,11 @@
 #from pydantic import BaseModel
 import pandas as pd
 #from typing import Optional
-#from datetime import date
+import datetime
 import pymongo
 import json
 from bson.json_util import dumps
+import numpy as np
 
 
 
@@ -20,29 +21,47 @@ def get_one(c:str):
 
 def extract_from_DB_to_df_with_condition(condition:dict,col):
     #df=pd.DataFrame(list(collection.find()))
+
     df = pd.DataFrame.from_dict(json.loads(dumps(collection.find(condition))))
     df.set_index(['id_transaction'])
-    df["date_transaction"] = df.date_transaction.apply(lambda x: pd.to_datetime(x['$date']).date())
+    df["date_transaction"] = df.date_transaction.apply(lambda x: pd.to_datetime(x['$date'],errors='coerce'))
+    df['semester'] = df.date_transaction.dt.year.astype(str) + 'S' + np.where(df.date_transaction.dt.quarter.gt(2),2,1).astype(str)
     df=df[col]
 
     return df
 
 
-def extract_distinct_value_with_condition(condition:dict,v):
-    #return list de valeur unique sur une requête avec condition
+def extract_distinct_value(condition:dict,v:str):
+
     return collection.find(condition).distinct(v)
 
 def extract_from_DB_to_df(col):
-    #df = pd.DataFrame(list(collection.find()))
+
     df = pd.DataFrame.from_dict(json.loads(dumps(collection.find())))
     df.set_index(['id_transaction'])
-    df["date_transaction"] = df.date_transaction.apply(lambda x: str(pd.to_datetime(x['$date']).date()))
+    df["date_transaction"] = df.date_transaction.apply(lambda x: pd.to_datetime(x['$date']).date())
+    df['semester'] = df.date_transaction.dt.year.astype(str) + 'S' + np.where(df.date_transaction.dt.quarter.gt(2), 2,
+                                                                              1).astype(str)
+
     df=df[col]
     return df
 
 
+
+
+def agg_from_DB_to_df(condition: dict, col):
+    #l=[]
+    #retourne liste dpt, list quartier pour un dpt
+    #df = pd.DataFrame.from_dict(json.loads(dumps(collection.find(condition))))
+    #df.set_index(['id_transaction'])
+    #df = df[col]
+    return None
+
 def generate_tdb_quartier():
-    
+    return None
+
+    #return collection.find(condition)
+
 #ajouter une colonne dans la BD prix/moyen par m²
 #Créer nouvelle table
 #_id
@@ -53,35 +72,31 @@ def generate_tdb_quartier():
 #ecart_type m²
 #Volume transac
 #
-    return None
 
+'''class Transaction(BaseModel):
 
-
-
-'''class Transaction():
-    def __init__(self,vefa:boolean,type_batiment:str,TYPE_IRIS:str,NOM_IRIS:str,NOM_COM:str,n_pieces:int,latitude:str,longitude:str,IRIS:str,prix:float,code_postal:int,date_transaction:datetime.date,DCOMIRIS:str,departement:str,adresse:str,surface_habitable:int,geometry:str,id_transaction:str,id_ville:int):
-
-    #self._id=id
-    #self.adresse=adresse
-    #self.code_postal=code_postal
-    #self.date_transaction=date_transaction
-    #self.DCOMIRIS=DCOMIRIS
-    #self.departement=departement
-    #self.prix=prix
-    #self.surface_habitable=surface_habitable
-    #self.geometry=geometry
-    #self.id_transaction=id_transaction
-    #self.id_ville=id_ville
-    #self.IRIS=IRIS
-    #self.latitude=latitude
-    #self.longitude=longitude
-    #self.n_pieces:int
-    #self.NOM_COM=NOM_COM
-    #self.NOM_IRIS:str
-    #self.TYPE_IRIS=TYPE_IRIS
-    #self.type_batiment=type_batiment
-    #self.vefa=vefa
-
+    #ID : StringField(default=str(ObjectIdField()))
+    #adresse:str
+    #code_postal:int
+    #date_transaction:date
+    #DCOMIRIS:str
+    #departement:str
+    #prix:Optional[float]=None
+    #surface_habitable:int
+    #DEPCOM:str
+    #geometry:Point
+    #id_transaction:str
+    #id_ville:int
+    #IRIS:str
+    #latitude:str
+    #longitude:str
+    #n_pieces:Optional[int]=None
+    #NOM_COM:str
+    #NOM_IRIS:Optional[str]=None
+    #TYPE_IRIS:Optional[str]=None
+    #type_batiment:Optional[str]=None
+    #vefa:Optional[bool]
+    #ville:str'''
 
 
 
