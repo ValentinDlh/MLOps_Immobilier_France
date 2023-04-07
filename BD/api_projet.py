@@ -8,13 +8,12 @@ import preprocessing
 
 
 # Importation des données
+
+#définition de la liste des colonnes du dataset que l'on souhaite afficher à l'utilisateur
 col=['id_transaction','prix', 'surface_habitable', 'n_pieces','date_transaction',
          'vefa','adresse', 'code_postal', 'NOM_COM', 'NOM_IRIS', 'TYP_IRIS', 'latitude', 'longitude']
 
-#dpt=db.extract_distinct_value('departement')
 
-#transactions=extract_from_DB_to_df(col)
-#transactions = pd.read_csv("Data/BD_Transaction_import.csv", delimiter=';')
 
 # Description des endpoints de l'API
 description_transactions = f"il faut renseigner une date au format aaaa-mm-jj \
