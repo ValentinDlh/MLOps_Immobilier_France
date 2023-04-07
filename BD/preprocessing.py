@@ -62,23 +62,30 @@ def data_transformation(df):
     return df_scaled, prix_min, prix_max, n_pieces_min, n_pieces_max, surface_habitable_min, surface_habitable_max
 
 
-def generer_sous_dataset(df,surface,n_pieces,vefa,col,lim_nb_ligne=25,percent_ecart=0.25,ecart_type):
+def generer_sous_dataset(df,surface,n_pieces,vefa,col,lim_nb_ligne=25,percent_ecart=0.25):
     #lim_nb_ligne est le nombre de ligne maximal du sous dataset final qui sera utiliser pour faire une prediction
     
     #percent_ecart est le pourcentage d'écart en surface que l'on va utiliser pour filtrer les transactions d'intéret - ex un appartement de 30m² +ou- 25%     
     ecart_surface = surface*percent_ecart
     
-
+    #Pour chaque critère on calcul l'écart entre le critère du demandeur et la variable correspondante de chaque transaction du dataset
     df['sort_surf'] = df.surface_habitable.apply(lambda x: None if surface is None else abs(x - surface))
     df['sort_nb_p'] = df.n_pieces.apply(lambda x: None if n_pieces is None else abs(x - n_pieces))
     df['sort_vefa'] = df.vefa.apply(lambda x: None if vefa is None else x & vefa)
-    df=df[(np.abs(stats.zscore(df['prix'])) < 4) & (df['sort_surf'] <= ecart_surface)]
     
+    #On filtre les transactions similaires selon la surface habitable
+    df = df[df['sort_surf'] <= ecart_surface]
+    
+    #on calcul le prix au m2
     df['prix_m2'] = df.apply(lambda x: x['prix'] / x['surface_habitable'], axis=1)
-    prix_moy_m=df['prix_m2'].median()
-    df['sort_prix']=df.prix_m2.apply(lambda x: abs(x-prix_moy_m))
+    
+    #on supprime les outliers avec le zscore
+    df=df[(np.abs(stats.zscore(df['prix_m2'])) < 2.0)]  
+    
+    prix_med_m2=df['prix_m2'].median()
+    df['sort_prix']=df.prix_m2.apply(lambda x: abs(x-prix_med_m2))
+    
+    #On trie le dataset selon les transactions les plus proches des critères fournies par le demandeurs et selon les prix les plus proches de la mediane
     df=df.sort_values(by=['semester','sort_vefa','sort_prix','sort_nb_p'], ascending=(False,False,True,True)).head(lim_nb_ligne)
     df = df[col]
-
-
     return df
