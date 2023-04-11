@@ -1,8 +1,8 @@
 # MLOps_Immobilier_France
-Ce projet s'inscrit dans le cadre de notre formation MLOps au sein de l'organisme DataScientest.
+Ce projet s'inscrit dans le cadre de l'apprentissage de la mise en place d'un pipeline MLOps.
 
 ## Introduction
-L'objectif de ce projet est de développer une solution de prédiction du prix d’un appartement ou d’une maison en France en utilisant un modèle de machine learning. Cette solution sera accessible via une API avec FastAPI, authentification des utilisateurs, une base de données SQL pour le backend, et conteneurisée avec Docker. La solution sera testée et monitorée de manière périodique, aura un pipeline CI/CD, et une interface Web Front sera créée pour permettre aux utilisateurs d'utiliser l'outil. Le déploiement sera effectué sur AWS avec un lien public pour se connecter.
+L'objectif de ce projet est de développer une solution de prédiction du prix d’un appartement en France en utilisant un modèle de machine learning. Cette solution sera accessible via une API avec FastAPI, authentification des utilisateurs, une base de données SQL pour le backend, et conteneurisée avec Docker. La solution sera testée et monitorée de manière périodique, aura un pipeline CI/CD, et une interface Web Front sera créée pour permettre aux utilisateurs d'utiliser l'outil. Le déploiement sera effectué sur AWS avec un lien public pour se connecter.
 
 ## Objectifs
 •	Développer un modèle de machine learning pour la prédiction de prix immobilier en France  
