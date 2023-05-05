@@ -13,8 +13,6 @@ import preprocessing
 col=['id_transaction','prix', 'surface_habitable', 'n_pieces','date_transaction',
          'vefa','adresse', 'code_postal', 'NOM_COM', 'NOM_IRIS', 'TYP_IRIS', 'latitude', 'longitude']
 
-
-
 # Description des endpoints de l'API
 description_transactions = f"il faut renseigner une date au format aaaa-mm-jj \
             , une période en mois, le numéro du département et le nom de la ville en majuscule (voir la section GET VILLES)."
