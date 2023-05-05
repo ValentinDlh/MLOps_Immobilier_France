@@ -4,13 +4,14 @@ import pymongo
 import json
 from bson.json_util import dumps
 import numpy as np
-
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 
 #Connection à la BD
-mongoURI="mongodb://localhost:27017"
-client=pymongo.MongoClient(mongoURI)
-db=client['Transactions']
-collection=db['Immo']
+uri="mongodb+srv://vlago:DE_Immo_2023@cluster0.fv699mr.mongodb.net/?retryWrites=true&w=majority"
+client = MongoClient(uri, server_api=ServerApi('1'))
+db=client['Immo']
+collection=db['Transactions']
 
 
 # Obtenir une transaction par son ID
