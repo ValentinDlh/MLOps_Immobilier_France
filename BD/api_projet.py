@@ -103,10 +103,10 @@ def get_transactions(departement : str, ville : str, quartier : List[str] = Quer
     return df.to_dict(orient='records')
 
 @api.get('/predictions', tags=["Prédictions"], description="Retourne la prédiction du prix d'un appartement avec un intervalle de confiance", responses=responses)
-def get_prediction(departement : str, ville : str,  surface_habitable : int,vefa : bool | None = None, n_pieces : int | None = None ,quartier : List[str] = Query(None)):
+def get_prediction(departement : str, ville : str,  surface_habitable : int,vefa : bool = None, n_pieces : int = None ,quartier : List[str] = Query(None)):
     predictions = {}
 
-    prediction_prix, mae_train, mae_test, model, params,nb = pred.prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable,col)
+    prediction_prix, mae_train, mae_test, model, params, nb, score = pred.prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable,col)
     predictions["prediction_prix"] = prediction_prix[0]
     predictions["intervalle_confiance_montant"] = mae_test
     predictions["intervalle_confiance_ratio"] = mae_test/prediction_prix[0]
@@ -114,5 +114,6 @@ def get_prediction(departement : str, ville : str,  surface_habitable : int,vefa
     predictions["echantillon"] = nb
     predictions["modèle"] = model
     predictions["paramètre"] = params
+    predictions["rmse"] = score
 
     return predictions

@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 import db as db
 import numpy as np
 from scipy import stats
@@ -24,7 +24,6 @@ def get_quartiers(ville):
 
 
 # Renvoie une base de données ciblée en fonction des données de géolocalisation
-
 def data_selection(departement,ville,quartier,col,sous_dataset:bool,param_sous_data:dict):
     #On definit query un dictionnaire qui définit les critères géographiques de transactions : ville et quartiers
     query={"departement":departement,"NOM_COM":ville,"NOM_IRIS":{"$in": quartier}}
@@ -45,21 +44,15 @@ def data_transformation(df):
 
     # One Hot Encoding
     df["vefa"] = df["vefa"].astype(int)
-    # Détermination des float min et max
-    prix_min = df["prix"].min()
-    prix_max = df["prix"].max()
-    n_pieces_min = df["n_pieces"].min()
-    n_pieces_max = df["n_pieces"].max()
-    surface_habitable_min = df["surface_habitable"].min()
-    surface_habitable_max = df["surface_habitable"].max()
 
-    # MinMaxScaler
-    scaler = MinMaxScaler()
-    df_scaled = pd.DataFrame(scaler.fit_transform(df))
+    # StandardScaler
+    scaler = StandardScaler()
+    scaled_data = scaler.fit_transform(df)
+    df_scaled = pd.DataFrame(scaled_data)
     df_scaled = df_scaled.rename(columns=dict(zip(df_scaled.columns, df.columns)))
 
-    # Retourne le dataset transformé ainsi que les valeurs minimales et maximales pour renvoyer la bonne prédiction future
-    return df_scaled, prix_min, prix_max, n_pieces_min, n_pieces_max, surface_habitable_min, surface_habitable_max
+    # Retourne le dataset transformé ainsi que le scaler
+    return df_scaled, scaler
 
 
 def generer_sous_dataset(df,surface,n_pieces,vefa,col,lim_nb_ligne=25,percent_ecart=0.25):
