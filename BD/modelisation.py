@@ -33,7 +33,7 @@ def optimize_linear_regression(X, y):
                   'copy_X': [True, False]}
 
     # Optimisation des hyperparamètres basé sur la rmse
-    grid_search = GridSearchCV(model, parameters, cv=5, scoring='neg_root_mean_squared_error')
+    grid_search = GridSearchCV(model, parameters, cv=3, scoring='neg_root_mean_squared_error')
     grid_search.fit(X, y)
 
     return grid_search.best_estimator_, grid_search.best_params_, -1*grid_search.best_score_
@@ -49,7 +49,7 @@ def optimize_elastic_net(X, y):
     elastic_net = ElasticNet()
 
     # Optimisation des hyperparamètres basé sur la rmse
-    grid_search = GridSearchCV(elastic_net, param_grid, cv=5, scoring='neg_root_mean_squared_error')
+    grid_search = GridSearchCV(elastic_net, param_grid, cv=3, scoring='neg_root_mean_squared_error')
     grid_search.fit(X, y)
 
     return grid_search.best_estimator_, grid_search.best_params_, -1*grid_search.best_score_
@@ -65,7 +65,7 @@ def optimize_decision_tree(X, y):
     dt = DecisionTreeRegressor()
 
     # Optimisation des hyperparamètres basé sur la rmse
-    grid_search = GridSearchCV(dt, param_grid, cv=5, scoring='neg_root_mean_squared_error')
+    grid_search = GridSearchCV(dt, param_grid, cv=3, scoring='neg_root_mean_squared_error')
     grid_search.fit(X, y)
 
     return grid_search.best_estimator_, grid_search.best_params_, -1*grid_search.best_score_
@@ -82,7 +82,7 @@ def optimize_random_forest(X, y):
     rf = RandomForestRegressor()
 
     # Optimisation des hyperparamètres basé sur la rmse
-    grid_search = GridSearchCV(rf, param_grid, cv=5, scoring='neg_root_mean_squared_error')
+    grid_search = GridSearchCV(rf, param_grid, cv=3, scoring='neg_root_mean_squared_error')
     grid_search.fit(X, y)
 
     return grid_search.best_estimator_, grid_search.best_params_, -1*grid_search.best_score_
