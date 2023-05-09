@@ -41,7 +41,7 @@ def prediction(departement, ville, quartier,vefa, n_pieces, surface_habitable,co
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=123)
 
     # Récupération du modèle
-    model, params = best_estimator(X_train, y_train)
+    model, params, score = best_estimator(X_train, y_train)
     model.fit(X_train, y_train)
 
     y_pred_train = model.predict(X_train)
@@ -53,4 +53,4 @@ def prediction(departement, ville, quartier,vefa, n_pieces, surface_habitable,co
     prediction_norm = model.predict([[n_pieces_norm, surface_habitable_norm]])
     prediction = prediction_norm * df["prix"].std() + df["prix"].mean()
 
-    return prediction, mae_train, mae_test, str(model), str(params),df.shape[0]
+    return prediction, mae_train, mae_test, str(model), str(params), df.shape[0], score
