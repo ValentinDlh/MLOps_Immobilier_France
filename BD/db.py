@@ -58,7 +58,8 @@ def extract_from_DB_to_df(col):
 
 
 def generer_tdb_quartier():
-
+#création de la requête qui permettra de générer notre tableau de bord quartier à partir de la table Transactions
+# SELECT departement,NOM_COM,ANNEE, AVG(Prix_m2),STD(Prix_m2),AVG(Prix_m2),COUNT(id_Transaction) FROM Transaction GROUP BY departement, NOM_COM,ANNEE ORDER BY ANNEE,departement,NOM_COM
     pipeline = [
         {
             '$match': {
@@ -72,7 +73,7 @@ def generer_tdb_quartier():
                     'departement': '$departement',
                     'NOM_COM': '$NOM_COM',
                     #'NOM_IRIS':'$NOM_IRIS'
-                    #'ANNEE': {'$year': '$date_transaction'}
+                    'ANNEE': {'$year': '$date_transaction'}
                 },
                 'Prix_moyen_m2': {'$avg': '$prix_m2'},
                 'Prix_moyen_m2_ecart_type': {'$stdDevPop': '$prix_m2'},
@@ -81,35 +82,35 @@ def generer_tdb_quartier():
             }
         },
         {
+            '$sort': {
+                '_id.departement': 1,
+                '_id.NOM_COM':1,
+                '_id.ANNEE': 1,
+            }
+        },
+        {
             "$project": {
                 "_id": 0,
                 "departement": "$_id.departement",
                 "NOM_COM": "$_id.NOM_COM",
-                #"ANNEE": "$_id.ANNEE",
+                "ANNEE": "$_id.ANNEE",
                 "Prix_moyen_m2": {'$toInt': '$Prix_moyen_m2'},  # Conversion en entier
                 "Prix_moyen_m2_ecart_type": {'$toInt': '$Prix_moyen_m2_ecart_type'},
                 "Moyenne_surface_habitable": {'$toInt': '$AVG_surface_habitable'},
                 'COUNT_id_transaction': 1
             }
-        },
-        {
-            '$sort': {
-                '_id.ANNEE': -1,
-                '_id.departement': 1
-            }
         }
-
     ]
 
     result = db.Transactions.aggregate(pipeline)
     collection_list=db.list_collection_names()
 
     for c in collection_list:
-
         if c == 'Tdb_Quartier' :
             db['Tdb_Quartier'].drop()
 
     new_collection = db['Tdb_Quartier']
+
       # Nouvelle collection pour enregistrer les résultats
 
     documents_to_insert = list(result)
