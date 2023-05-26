@@ -5,7 +5,7 @@ from modelisation import best_estimator
 
 
 
-def prediction(departement, ville, quartier,vefa, n_pieces, surface_habitable,col):
+def prediction(departement, ville, quartier,vefa, n_pieces, surface_habitable, col):
     """
     Renvoie la prédiction de notre modèle basé sur les inputs de l'utilisateur.
     """
