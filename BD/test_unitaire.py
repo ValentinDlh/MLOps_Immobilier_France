@@ -21,10 +21,6 @@ def write_metric(dic, f):
     with open(f, 'w') as json_file:
         json.dump(dic, json_file)
 
-date_last_DB=get_metrics(filename)['date_last_DB']
-nb_ligne_bd_Transactions=get_metrics(filename)['nb_ligne_bd_Transactions']
-nb_ligne_bd_Tdb_Quartier=get_metrics(filename)['nb_ligne_bd_Tdb_Quartier']
-df_rqt=pd.DataFrame(get_metrics(filename)['df_rqt_test_transaction'])
 
         
 def test_nb_ligne_BD(current_nb_row,collection):
@@ -104,14 +100,3 @@ def test_rqt(df,collection):
     else:
         l=[]
         return test, l
-
-
-d={}
-d['date_last_DB']=str(dt.datetime.now())
-test_nb_ligne_bd_Transactions,d['nb_ligne_bd_Transactions']=test_nb_ligne_BD(nb_ligne_bd_Transactions,'Transactions')
-test_nb_ligne_bd_Tdb_Quartier,d['nb_ligne_bd_Tdb_Quartier']=test_nb_ligne_BD(nb_ligne_bd_Tdb_Quartier,'Tdb_Quartier')
-test_df_rqt_test_transaction,d['df_rqt_test_transaction']=test_rqt(df_rqt,'Transactions')
-
-#écrire les valeurs
-if (test_nb_ligne_bd_Transactions & test_nb_ligne_bd_Tdb_Quartier & test_df_rqt_test_transaction):
-    write_metric(d,filename)
