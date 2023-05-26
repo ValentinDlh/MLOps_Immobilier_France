@@ -20,6 +20,11 @@ collection = db['Transactions']
 def get_one(c: str):
     return collection.find_one({"id_transaction": c})
 
+def rqt_bd(rqt,col):
+    #return db.db[collection].count_documents(rqt)
+    return list(db[col].aggregate(rqt))
+
+
 
 # extraire les données d'une requête dans la BD dans un dataframe
 
