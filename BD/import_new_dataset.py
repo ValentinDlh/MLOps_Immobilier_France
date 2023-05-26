@@ -103,7 +103,7 @@ def import_new_transactions(new_df):
     collection.insert_many(data)
 
 
-if __name__ == '__main__':
+def import_new_data_main():
 
     import_new_dataset()
     print("import zip done !")
