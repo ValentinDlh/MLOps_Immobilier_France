@@ -101,27 +101,3 @@ def import_new_transactions(new_df):
 
     # insertion des nouvelles transactions dans mongodb
     collection.insert_many(data)
-
-
-def import_new_data_main():
-
-    import_new_dataset()
-    print("import zip done !")
-    file_extract()
-    print("extract npz done !")
-    df = npz_to_df()
-
-    most_recent_date_new = get_date_max_new_transactions(df)
-    print(most_recent_date_new)
-    most_recent_date_old = get_date_max_old_transactions(collection)
-    print(most_recent_date_old)
-
-    if most_recent_date_new > most_recent_date_old:
-        new_transactions = df[df["date_transaction"] > most_recent_date_old]
-        print(new_transactions.columns)
-        new_data = batch_iris(new_transactions)
-        print(new_data.columns)
-        new_data_final = generate_new_transactions(new_data)
-        print(new_data_final.columns)
-        import_new_transactions(new_data_final)
-        print("done !")
