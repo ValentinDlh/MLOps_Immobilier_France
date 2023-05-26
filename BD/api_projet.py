@@ -10,8 +10,8 @@ import preprocessing
 # Importation des données
 
 #définition de la liste des colonnes du dataset que l'on souhaite afficher à l'utilisateur
-col=['id_transaction','prix', 'surface_habitable', 'n_pieces','date_transaction',
-         'vefa','adresse', 'code_postal', 'NOM_COM', 'NOM_IRIS', 'TYP_IRIS', 'latitude', 'longitude']
+col=['prix', 'surface_habitable', 'n_pieces', 'date_transaction', 'semester',
+       'vefa', 'adresse', 'code_postal', 'NOM_COM', 'NOM_IRIS', 'TYP_IRIS']
 
 # Description des endpoints de l'API
 description_transactions = f"il faut renseigner une date au format aaaa-mm-jj \
@@ -53,8 +53,6 @@ responses = {
     401: {"description": "Problème d'authentification"}
 }
 
-col = ['prix', 'surface_habitable', 'n_pieces', 'date_transaction', 'semester',
-       'vefa', 'adresse', 'code_postal', 'NOM_COM', 'NOM_IRIS', 'TYP_IRIS', 'latitude', 'longitude']
 
 # Formulaire d'authentification et vérification d'identifiants
 def get_current_user(credentials: HTTPBasicCredentials = Depends(security)):
@@ -103,17 +101,17 @@ def get_transactions(departement : str, ville : str, quartier : List[str] = Quer
     return df.to_dict(orient='records')
 
 @api.get('/predictions', tags=["Prédictions"], description="Retourne la prédiction du prix d'un appartement avec un intervalle de confiance", responses=responses)
-def get_prediction(departement : str, ville : str,  surface_habitable : int,vefa : bool = None, n_pieces : int = None ,quartier : List[str] = Query(None)):
+def get_prediction(departement : str, ville : str,  surface_habitable : int,vefa : bool | None = None, n_pieces : int | None = None ,quartier : List[str] = Query(None)):
     predictions = {}
 
-    prediction_prix, mae_train, mae_test, model, params, nb, score = pred.prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable,col)
-    predictions["prediction_prix"] = prediction_prix[0]
-    predictions["intervalle_confiance_montant"] = mae_test
-    predictions["intervalle_confiance_ratio"] = mae_test/prediction_prix[0]
-    predictions["mae_train"] = mae_train
+    prediction_prix, mae_train, mae_test, model, params, nb, score = pred.prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable, col)
+    predictions["prediction_prix"] = int(prediction_prix[0])
+    predictions["intervalle_confiance_montant"] = int(mae_test)
+    predictions["intervalle_confiance_ratio"] = round(mae_test/prediction_prix[0],2)
+    predictions["mae_train"] = int(mae_train)
     predictions["echantillon"] = nb
     predictions["modèle"] = model
     predictions["paramètre"] = params
-    predictions["rmse"] = score
+    predictions["rmse"] = round(score, 2)
 
     return predictions
