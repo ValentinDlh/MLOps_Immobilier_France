@@ -10,8 +10,4 @@ typing
 bcrypt
 geopandas
 shapely
-datetime
-subprocess
-zipfile
-docker
-airflow
+bson
