@@ -5,12 +5,12 @@ from typing import List,Optional
 import db as db
 import prediction as pred
 import preprocessing
-
+from typing import Union
 
 # Importation des données
 
 #définition de la liste des colonnes du dataset que l'on souhaite afficher à l'utilisateur
-col=['prix', 'surface_habitable', 'n_pieces', 'date_transaction', 'semester',
+col=['prix','prix_m2', 'surface_habitable', 'n_pieces', 'date_transaction', 'semester',
        'vefa', 'adresse', 'code_postal', 'NOM_COM', 'NOM_IRIS', 'TYP_IRIS']
 
 # Description des endpoints de l'API
@@ -96,22 +96,24 @@ def get_quartiers(ville: str):
 @api.get('/transactions', tags=["Transactions"], description="Retourne les transactions spécifiques à une période et à une ville: "+description_transactions, responses=responses)
 def get_transactions(departement : str, ville : str, quartier : List[str] = Query(None)):
     p={}
+
     df = preprocessing.data_selection(departement, ville, quartier,col,sous_dataset=False,param_sous_data=p)
     #df = df[["date_transaction", "prix", "departement", "adresse", "ville", "code_postal", "vefa", "n_pieces", "surface_habitable", "NOM_IRIS"]]
     return df.to_dict(orient='records')
 
 @api.get('/predictions', tags=["Prédictions"], description="Retourne la prédiction du prix d'un appartement avec un intervalle de confiance", responses=responses)
-def get_prediction(departement : str, ville : str,  surface_habitable : int,vefa : bool | None = None, n_pieces : int | None = None ,quartier : List[str] = Query(None)):
-    predictions = {}
+def get_prediction(departement: str, ville : str,  surface_habitable : int,vefa : Optional[bool]=None, n_pieces : Optional[int]=None, quartier : List[str]=Query(None)):
+
+    p = {}
 
     prediction_prix, mae_train, mae_test, model, params, nb, score = pred.prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable, col)
-    predictions["prediction_prix"] = int(prediction_prix[0])
-    predictions["intervalle_confiance_montant"] = int(mae_test)
-    predictions["intervalle_confiance_ratio"] = round(mae_test/prediction_prix[0],2)
-    predictions["mae_train"] = int(mae_train)
-    predictions["echantillon"] = nb
-    predictions["modèle"] = model
-    predictions["paramètre"] = params
-    predictions["rmse"] = round(score, 2)
+    p["prediction_prix"] = int(prediction_prix[0])
+    p["intervalle_confiance_montant"] = int(mae_test)
+    p["intervalle_confiance_ratio"] = round(mae_test/prediction_prix[0],2)
+    p["mae_train"] = int(mae_train)
+    p["echantillon"] = nb
+    p["modèle"] = model
+    p["paramètre"] = params
+    p["rmse"] = round(score, 2)
 
-    return predictions
+    return p
