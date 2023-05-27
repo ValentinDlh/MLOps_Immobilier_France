@@ -1,12 +1,13 @@
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-
+from datetime import datetime
 import pandas as pd
+
+
 import import_new_dataset
 import test_unitaire
-
+import db
 
 my_immo_dag = DAG(
     dag_id='immo_dag',
@@ -21,9 +22,8 @@ my_immo_dag = DAG(
 )
 
 
-# Task 1
+# Task 1_1
 def import_new_data_main():
-
     import_new_dataset.import_new_dataset()
     print("import zip done !")
     import_new_dataset.file_extract()
@@ -45,17 +45,20 @@ def import_new_data_main():
         import_new_dataset.import_new_transactions(new_data_final)
         print("done !")
 
+#Task1_2 : générer Tdb_quartier
 
-# Task 2
+
+
+
+# Task 2 : récupérer les metriques dans le fichier json
 def get_all_metrics(task_instance):
+    date_last_DB = test_unitaire.get_metrics(test_unitaire.filename)['date_last_DB']
+    nb_ligne_bd_Transactions = test_unitaire.get_metrics(test_unitaire.filename)['nb_ligne_bd_Transactions']
+    nb_ligne_bd_Tdb_Quartier = test_unitaire.get_metrics(test_unitaire.filename)['nb_ligne_bd_Tdb_Quartier']
+    df_rqt = pd.DataFrame(test_unitaire.get_metrics(test_unitaire.filename)['df_rqt_test_transaction'])
 
-    date_last_DB=test_unitaire.get_metrics(test_unitaire.filename)['date_last_DB']
-    nb_ligne_bd_Transactions=test_unitaire.get_metrics(test_unitaire.filename)['nb_ligne_bd_Transactions']
-    nb_ligne_bd_Tdb_Quartier=test_unitaire.get_metrics(test_unitaire.filename)['nb_ligne_bd_Tdb_Quartier']
-    df_rqt=pd.DataFrame(test_unitaire.get_metrics(test_unitaire.filename)['df_rqt_test_transaction'])
-    
     print(date_last_DB)
-    
+
     task_instance.xcom_push(
         key="nb_ligne_bd_Transactions",
         value=nb_ligne_bd_Transactions
@@ -70,30 +73,32 @@ def get_all_metrics(task_instance):
     )
 
 
+
+
 # Task 3
 def test_unitaires(task_instance):
-    
     nb_ligne_bd_Transactions = task_instance.xcom_pull(
-            key="nb_ligne_bd_Transactions",
-            task_ids=['task_2']
-        )
-    
+        key="nb_ligne_bd_Transactions",
+        task_ids=['task_2']
+    )
+
     nb_ligne_bd_Tdb_Quartier = task_instance.xcom_pull(
-            key="nb_ligne_bd_Tdb_Quartier",
-            task_ids=['task_2']
-        )
-    
+        key="nb_ligne_bd_Tdb_Quartier",
+        task_ids=['task_2']
+    )
+
     df_rqt = task_instance.xcom_pull(
-            key="df_rqt",
-            task_ids=['task_2']
-        )
-    
-    d={}
-    d['date_last_DB']=str(datetime.now())
-    test_nb_ligne_bd_Transactions,d['nb_ligne_bd_Transactions']=test_unitaire.test_nb_ligne_BD(nb_ligne_bd_Transactions,'Transactions')
-    test_nb_ligne_bd_Tdb_Quartier,d['nb_ligne_bd_Tdb_Quartier']=test_unitaire.test_nb_ligne_BD(nb_ligne_bd_Tdb_Quartier,'Tdb_Quartier')
-    test_df_rqt_test_transaction,d['df_rqt_test_transaction']=test_unitaire.test_rqt(df_rqt,'Transactions')
-    
+        key="df_rqt",
+        task_ids=['task_2']
+    )
+
+    d = {}
+    d['date_last_DB'] = str(datetime.now())
+    test_nb_ligne_bd_Transactions, d['nb_ligne_bd_Transactions'] = test_unitaire.test_nb_ligne_BD(
+        nb_ligne_bd_Transactions, 'Transactions')
+    test_nb_ligne_bd_Tdb_Quartier, d['nb_ligne_bd_Tdb_Quartier'] = test_unitaire.test_nb_ligne_BD(
+        nb_ligne_bd_Tdb_Quartier, 'Tdb_Quartier')
+    test_df_rqt_test_transaction, d['df_rqt_test_transaction'] = test_unitaire.test_rqt(df_rqt, 'Transactions')
 
     task_instance.xcom_push(
         key="d",
@@ -111,59 +116,65 @@ def test_unitaires(task_instance):
         key="test_df_rqt_test_transaction",
         value=test_df_rqt_test_transaction
     )
-    
+
 
 # Task 4
 def write_metrics_all(task_instance):
-    
     d = task_instance.xcom_pull(
-            key="d",
-            task_ids=['task_3']
-        )
-    
+        key="d",
+        task_ids=['task_3']
+    )
+
     test_nb_ligne_bd_Transactions = task_instance.xcom_pull(
-            key="test_nb_ligne_bd_Transactions",
-            task_ids=['task_3']
-        )
-    
+        key="test_nb_ligne_bd_Transactions",
+        task_ids=['task_3']
+    )
+
     test_nb_ligne_bd_Tdb_Quartier = task_instance.xcom_pull(
-            key="test_nb_ligne_bd_Tdb_Quartier",
-            task_ids=['task_3']
-        )
-    
+        key="test_nb_ligne_bd_Tdb_Quartier",
+        task_ids=['task_3']
+    )
+
     test_df_rqt_test_transaction = task_instance.xcom_pull(
-            key="test_df_rqt_test_transaction",
-            task_ids=['task_3']
-        )
-    #écrire les valeurs
+        key="test_df_rqt_test_transaction",
+        task_ids=['task_3']
+    )
+    # écrire les valeurs
     if (test_nb_ligne_bd_Transactions & test_nb_ligne_bd_Tdb_Quartier & test_df_rqt_test_transaction):
-        test_unitaire.write_metric(d,test_unitaire.filename)
+        test_unitaire.write_metric(d, test_unitaire.filename)
 
 
-task_1 = PythonOperator(
+task_1_1 = PythonOperator(
     task_id='import_new_data',
     python_callable=import_new_dataset.import_new_data_main,
     dag=my_immo_dag
 )
 
+task_1_2 = PythonOperator(
+    task_id='generer_tdb_quartier',
+    python_callable=db.generer_tdb_quartier,
+    dag=my_immo_dag
+)
+
 task_2 = PythonOperator(
     task_id='get_metrics_all',
-    python_callable=test_unitaire.get_all_metrics,
+    python_callable=get_all_metrics,
     dag=my_immo_dag
 )
 
 task_3 = PythonOperator(
     task_id='test_unitaires',
-    python_callable=test_unitaire.test_unitaires,
+    python_callable=test_unitaires,
     dag=my_immo_dag
 )
 
 task_4 = PythonOperator(
     task_id='write_metrics_all',
-    python_callable=test_unitaire.write_metrics_all,
+    python_callable=write_metrics_all,
     dag=my_immo_dag
 )
 
-task_1 >> task_2
+task_1_1 >> task_1_2
+task_1_2 >> task_2
 task_2 >> task_3
 task_3 >> task_4
