@@ -26,6 +26,13 @@ my_immo_dag = DAG(
 
 #task 1_0: test connexion BD
 
+def test_connexion_bd():
+
+    a=db.get_data_from_db({'id_transaction':107332}, 'Transactions')[0]['NOM_COM']
+    print(a)
+    return a
+
+
 
 
 # Task 1_1
@@ -152,9 +159,8 @@ def write_metrics_all(task_instance):
 
 task_1_0 = PythonOperator(
     task_id='test_connection_BD',
-    python_callable=db.get_data_from_db,
+    python_callable=test_connexion_bd,
     dag=my_immo_dag,
-    op_kwargs={'c': {'id_transaction':107332,'collec':'Transactions'}}
 )
 
 

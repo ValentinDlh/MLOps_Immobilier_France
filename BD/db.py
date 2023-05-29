@@ -14,25 +14,28 @@ def connecter():
     hook = MongoHook(mongo_conn_id='mongo_default')
     client = hook.get_conn()
     database_immo = client['Immo']
+    #print(client.server_info())
     return database_immo
 
 
 # Connection à la BD
 #"mongodb+srv://vlago:DE_Immo_2023@cluster0.fv699mr.mongodb.net/?retryWrites=true&w=majority"
 
-uri = "mongodb://localhost:27017"
-client = MongoClient(uri, server_api=ServerApi('1'))
-db=client['Immo']
-#db =connecter() #
+#uri = "mongodb://localhost:27017"
+#client = MongoClient(uri, server_api=ServerApi('1'))
+#db=client['Immo']
+db =connecter() #
 collection = db['Transactions']
 
 
 # Obtenir une transaction par son ID
-def get_data_from_db(c: str,collec):
+def get_data_from_db(c,collec):
 
     #a=collection.find({"id_transaction": c})[0]['NOM_IRIS']
     #print(a)
     return db[collec].find(c)
+
+
 
 def rqt_bd(rqt,col):
     #return db.db[collection].count_documents(rqt)
