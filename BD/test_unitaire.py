@@ -1,15 +1,12 @@
 import datetime as dt
 import db as db
-import requests
 import json
-import datetime
 import pandas as pd
-import os
-from joblib import dump
+
+filename = 'metrics.json'
 
 
-filename='data_metric/metrics.json'
-#parent_folder=''
+# parent_folder=''
 
 def get_metrics(f):
     with open(f, 'r') as file:
@@ -17,33 +14,37 @@ def get_metrics(f):
 
     return res
 
+
 def write_metric(dic, f):
     with open(f, 'w') as json_file:
         json.dump(dic, json_file)
 
 
-        
-def test_nb_ligne_BD(current_nb_row,collection):
-    
+#date_last_DB = get_metrics(filename)['date_last_DB']
+#nb_ligne_bd_Transactions = get_metrics(filename)['nb_ligne_bd_Transactions']
+#nb_ligne_bd_Tdb_Quartier = get_metrics(filename)['nb_ligne_bd_Tdb_Quartier']
+#df_rqt = pd.DataFrame(get_metrics(filename)['df_rqt_test_transaction'])
+
+
+def test_nb_ligne_BD(current_nb_row, collection):
     res = db.db[collection].count_documents({})
 
-    if (res > current_nb_row) | ((res==current_nb_row) & (collection=='Tdb_Quartier')) :
-        print('test OK : import de '+ str(res-current_nb_row)+ ' ligne(s) dans la table '+collection)
-        return True,res
+    if (res > current_nb_row) | ((res == current_nb_row) & (collection == 'Tdb_Quartier')):
+        print('test OK : import de ' + str(res - current_nb_row) + ' ligne(s) dans la table ' + collection)
+        return True, res
     else:
-        print('test KO : import de '+ str(res-current_nb_row)+ ' ligne dans la table '+collection)
-        return False,0
+        print('test KO : import de ' + str(res - current_nb_row) + ' ligne dans la table ' + collection)
+        return False, 0
 
 
-def test_rqt(df,collection):
-
-    list_ville=df.Ville.to_list()
-    y=int(df.ANNEE.unique()[0])
-    #print(type(y))
-    l=[]
-    #calcul des resultats des requêtes avec les nouvelles données
+def test_rqt(df, collection):
+    list_ville = df.Ville.to_list()
+    y = int(df.ANNEE.unique()[0])
+    # print(type(y))
+    l = []
+    # calcul des resultats des requêtes avec les nouvelles données
     test = True
-    st=''
+    st = ''
     for v in list_ville:
         rqt = [
             {
@@ -74,29 +75,42 @@ def test_rqt(df,collection):
             }
         ]
 
-        res = db.rqt_bd(rqt,collection)[0]#db.db[collection].aggregate(rqt)[0]
-        dic_temp={}
-        dic_temp['Ville']=v
-        dic_temp['ANNEE']=y
-        dic_temp['COUNT_id_transaction']=res['COUNT_id_transaction']
-        dic_temp['Prix_moyen']=res['Prix_moyen']
+        res = db.rqt_bd(rqt, collection)[0]  # db.db[collection].aggregate(rqt)[0]
+        dic_temp = {}
+        dic_temp['Ville'] = v
+        dic_temp['ANNEE'] = y
+        dic_temp['COUNT_id_transaction'] = res['COUNT_id_transaction']
+        dic_temp['Prix_moyen'] = res['Prix_moyen']
         l.append(dic_temp)
 
+        if (res['COUNT_id_transaction'] == df[(df['Ville'] == v)].COUNT_id_transaction.iloc[0]):
+            st = st + 'Ville ' + v + ' - count OK : ' + str(res['COUNT_id_transaction']) + ' \n'
+        else:
+            st = st + 'Ville ' + v + ' - count KO: avant import =' + str(
+                df[(df['Ville'] == v)].COUNT_id_transaction.iloc[0]) + ' VS aprés import = ' + str(
+                res['COUNT_id_transaction']) + '\n'
+            test = False
+        if (abs(df[(df['Ville'] == v)].Prix_moyen.iloc[0] - res['Prix_moyen']) < 5):
+            st = st + 'Ville ' + v + ' - prix_moyen OK : ' + str(res['Prix_moyen']) + ' \n'
+        else:
+            st = st + 'Ville ' + v + ' - prix_moyen KO: avant import = ' + str(
+                df[(df['Ville'] == v)].Prix_moyen.iloc[0]) + ' VS aprés import = ' + str(res['Prix_moyen']) + '\n'
+            test = False
+    print(st)
 
-        if(res['COUNT_id_transaction']==df[(df['Ville']==v)].COUNT_id_transaction.iloc[0]):
-            st= st +'Ville '+v+' - count OK : '+str(res['COUNT_id_transaction'])+' \n'
-        else:
-            st=st+'Ville '+v+' - count KO: avant import ='+str(df[(df['Ville']==v)].COUNT_id_transaction.iloc[0])+' VS aprés import = '+str(res['COUNT_id_transaction'])+'\n'
-            test=False
-        if (abs(df[(df['Ville']==v)].Prix_moyen.iloc[0] - res['Prix_moyen'])<5):
-            st=st+'Ville '+v+' - prix_moyen OK : '+str(res['Prix_moyen'])+' \n'
-        else:
-            st=st+'Ville '+v+' - prix_moyen KO: avant import = '+str(df[(df['Ville']==v)].Prix_moyen.iloc[0])+' VS aprés import = '+str(res['Prix_moyen'])+'\n'
-            test=False
-    print (st)
-        
-    if test == True :
-        return test,l
-    else:
-        l=[]
+    if test == True:
         return test, l
+    else:
+        l = []
+        return test, l
+
+
+#d = {}
+#d['date_last_DB'] = str(dt.datetime.now())
+#test_nb_ligne_bd_Transactions, d['nb_ligne_bd_Transactions'] = test_nb_ligne_BD(nb_ligne_bd_Transactions,'Transactions')
+#test_nb_ligne_bd_Tdb_Quartier, d['nb_ligne_bd_Tdb_Quartier'] = test_nb_ligne_BD(nb_ligne_bd_Tdb_Quartier,'Tdb_Quartier')
+#test_df_rqt_test_transaction, d['df_rqt_test_transaction'] = test_rqt(df_rqt, 'Transactions')
+
+# écrire les valeurs
+#if (test_nb_ligne_bd_Transactions & test_nb_ligne_bd_Tdb_Quartier & test_df_rqt_test_transaction):
+    #write_metric(d, filename)

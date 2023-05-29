@@ -3,6 +3,7 @@ from sklearn.preprocessing import StandardScaler
 import db as db
 import numpy as np
 from scipy import stats
+from json import dumps
 
 
 # Retourne la liste des départements contenu dans transactions
@@ -22,6 +23,65 @@ def get_quartiers(ville):
     quartiers = db.extract_distinct_value({"NOM_COM": ville}, "NOM_IRIS")
     return quartiers
 
+def get_tendance_ville(departement,ville,max_year):
+    #on récupère le Tdb_Quartier dans dataframe
+    data_brut = pd.DataFrame.from_dict(db.get_data_from_db({}, 'Tdb_Quartier'))
+
+    min_year=data_brut.ANNEE.min()
+
+
+    #calcul de l'évolution des moyennes national en nb de transactions et prix_moyen_m2
+
+    evolution_national_nb_transaction=round(
+        (
+                (data_brut[data_brut['ANNEE']==max_year]['COUNT_id_transaction'].sum()-data_brut[data_brut['ANNEE']==min_year]['COUNT_id_transaction'].sum())
+                /data_brut[data_brut['ANNEE']==min_year]['COUNT_id_transaction'].sum()),
+        3)*100
+
+    nb_transac_year_min=data_brut[data_brut['ANNEE']==min_year].COUNT_id_transaction.sum()
+    nb_transac_year_max = data_brut[data_brut['ANNEE'] == max_year].COUNT_id_transaction.sum()
+
+    data_brut['prix_m2_ponderé']=data_brut.apply(lambda x: int(x['Prix_moyen_m2']*x['COUNT_id_transaction']),axis=1)
+
+    prix_m2_national_moyen_year_min=data_brut[data_brut['ANNEE']==min_year]['prix_m2_ponderé'].sum()/nb_transac_year_min
+    prix_m2_national_moyen_year_max = data_brut[data_brut['ANNEE'] == max_year]['prix_m2_ponderé'].sum() / nb_transac_year_max
+
+    evolution_national_prix_m2=round(
+        ((prix_m2_national_moyen_year_max-prix_m2_national_moyen_year_min)
+         /prix_m2_national_moyen_year_min),3)*100
+
+
+    # calcul de l'évolution des moyennes sur la ville en nb de transactions et prix_moyen_m2
+
+    data_brut_ville = data_brut[(data_brut['NOM_COM'] == ville) & (data_brut['departement'] == departement)]
+    if (data_brut_ville.empty):
+        return None
+
+    evolution_ville_nb_transaction = (
+                (data_brut_ville[data_brut_ville['ANNEE'] == max_year]['COUNT_id_transaction'].sum() -
+                 data_brut_ville[data_brut_ville['ANNEE'] == min_year]['COUNT_id_transaction'].sum())
+                / data_brut_ville[data_brut_ville['ANNEE'] == min_year]['COUNT_id_transaction'].sum()) * 100
+
+    evolution_ville_prix_m2=(
+                (data_brut_ville[data_brut_ville['ANNEE'] == max_year]['Prix_moyen_m2'].sum() -
+                 data_brut_ville[data_brut_ville['ANNEE'] == min_year]['Prix_moyen_m2'].sum())
+                / data_brut_ville[data_brut_ville['ANNEE'] == min_year]['Prix_moyen_m2'].sum()) * 100
+
+    d={}
+    d['Ville']=ville
+    d['annee_depart']=int(min_year)
+    d['annee_fin'] = int(max_year)
+    #print(data_brut_ville[data_brut_ville['ANNEE'] == min_year]['COUNT_id_transaction'].iloc[0])
+    d['nb_transactions_'+str(min_year)]=int(data_brut_ville[data_brut_ville['ANNEE'] == min_year]['COUNT_id_transaction'].iloc[0])
+    d['nb_transactions_' + str(max_year)] =int(data_brut_ville[data_brut_ville['ANNEE'] == max_year]['COUNT_id_transaction'].iloc[0])
+
+    d['evolution_ville_nb_transactions'] = dumps(round(evolution_ville_nb_transaction,2))
+    d['evolution_ville_prix_m2'] = dumps(round(evolution_ville_prix_m2,2))
+
+    d['evolution_nb_transactions_moyenne_nationnale'] = dumps(round(evolution_national_nb_transaction,2))
+    d['evolution_prix_m2_moyenne_nationnale'] = dumps(round(evolution_national_prix_m2,2))
+
+    return d
 
 # Renvoie une base de données ciblée en fonction des données de géolocalisation
 def data_selection(departement, ville, quartier, col, sous_dataset: bool, param_sous_data: dict):

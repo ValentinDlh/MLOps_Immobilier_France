@@ -2,15 +2,13 @@ from fastapi import FastAPI, HTTPException, status, Depends,Query
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from passlib.context import CryptContext
 from typing import List,Optional
-import db as db
 import prediction as pred
 import preprocessing
-from typing import Union
 
 # Importation des données
 
 #définition de la liste des colonnes du dataset que l'on souhaite afficher à l'utilisateur
-col=['prix','prix_m2', 'surface_habitable', 'n_pieces', 'date_transaction', 'semester',
+col=['prix','prix_m2','id_transaction', 'surface_habitable', 'n_pieces', 'date_transaction', 'semester',
        'vefa', 'adresse', 'code_postal', 'NOM_COM', 'NOM_IRIS', 'TYP_IRIS']
 
 # Description des endpoints de l'API
@@ -97,7 +95,7 @@ def get_quartiers(ville: str):
 def get_transactions(departement : str, ville : str, quartier : List[str] = Query(None)):
     p={}
 
-    df = preprocessing.data_selection(departement, ville, quartier,col,sous_dataset=False,param_sous_data=p)
+    df = preprocessing.data_selection(departement, ville, quartier, col, sous_dataset=False, param_sous_data=p)
     #df = df[["date_transaction", "prix", "departement", "adresse", "ville", "code_postal", "vefa", "n_pieces", "surface_habitable", "NOM_IRIS"]]
     return df.to_dict(orient='records')
 
@@ -117,3 +115,20 @@ def get_prediction(departement: str, ville : str,  surface_habitable : int,vefa 
     p["rmse"] = round(score, 2)
 
     return p
+
+
+@api.get('/Tendance', tags=["Prédictions"], description="Retourne la tendance du prix au m² par an", responses=responses)
+def get_tendance(departement: int, ville : str, annee_fin : Optional[int]=None):
+    res={}
+    error={}
+
+    if((annee_fin<2019) | (annee_fin>2022)):
+        error['error']={'année_fin doit être compris entre 2019 et 2022'}
+        return error
+    else:
+        res=preprocessing.get_tendance_ville(departement,ville,annee_fin)
+        if res==None :
+            error['error']={'vérifier les paramètres saisis'}
+            return error
+
+    return res

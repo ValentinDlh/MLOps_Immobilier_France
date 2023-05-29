@@ -1,24 +1,38 @@
 import pandas as pd
-import datetime
-import pymongo
 import json
 from bson.json_util import dumps
+#import bson
 import numpy as np
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+
+from airflow.providers.http.operators.http import SimpleHttpOperator
+from airflow.providers.mongo.hooks.mongo import MongoHook
+from datetime import datetime,timedelta
+
+def connecter():
+    hook = MongoHook(mongo_conn_id='mongo_default')
+    client = hook.get_conn()
+    database_immo = client['Immo']
+    return database_immo
+
 
 # Connection à la BD
 #"mongodb+srv://vlago:DE_Immo_2023@cluster0.fv699mr.mongodb.net/?retryWrites=true&w=majority"
 
 uri = "mongodb://localhost:27017"
 client = MongoClient(uri, server_api=ServerApi('1'))
-db = client['Immo']
+db=client['Immo']
+#db =connecter() #
 collection = db['Transactions']
 
 
 # Obtenir une transaction par son ID
-def get_one(c: str):
-    return collection.find_one({"id_transaction": c})
+def get_data_from_db(c: str,collec):
+
+    #a=collection.find({"id_transaction": c})[0]['NOM_IRIS']
+    #print(a)
+    return db[collec].find(c)
 
 def rqt_bd(rqt,col):
     #return db.db[collection].count_documents(rqt)
@@ -46,20 +60,8 @@ def extract_from_DB_to_df_with_condition(condition: dict, col):
 
 # extraction des valeurs unique de la BD sur la colonne v
 
-def extract_distinct_value(condition: dict, v: str):
+def extract_distinct_value(condition: dict, v):
     return collection.find(condition).distinct(v)
-
-
-# extraction de toute la BD (sans requête) dans un dataframe - /!\trop long/!\
-def extract_from_DB_to_df(col):
-    df = pd.DataFrame.from_dict(json.loads(dumps(collection.find())))
-    df.set_index(['id_transaction'])
-    df["date_transaction"] = df.date_transaction.apply(lambda x: pd.to_datetime(x['$date']).date())
-    df['semester'] = df.date_transaction.dt.year.astype(str) + 'S' + np.where(df.date_transaction.dt.quarter.gt(2), 2,
-                                                                              1).astype(str)
-
-    df = df[col]
-    return df
 
 
 def generer_tdb_quartier():
@@ -123,5 +125,22 @@ def generer_tdb_quartier():
     if documents_to_insert:
         new_collection.insert_many(documents_to_insert)
 
+def test_conn():
+    try:
+    # Création d'une instance du client MongoDB
+        uri = "mongodb://localhost:27017"
+        client = MongoClient(uri)
+    # Sélection de la base de données
+        db = client['Transactions']
 
+    # Vérification de la connexion
+        if db.name:
+            print("Connexion réussie à la base de données :", db.name)
+        # Effectuez d'autres opérations ici si nécessaire
+        # ...
 
+    # Fermeture de la connexion
+        client.close()
+
+    except Exception as e:
+        print("Erreur lors de la connexion à la base de données :", str(e))

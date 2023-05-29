@@ -1,25 +1,31 @@
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
-from datetime import datetime
 import pandas as pd
+import datetime
 
 
 import import_new_dataset
 import test_unitaire
 import db
 
+
+
 my_immo_dag = DAG(
     dag_id='immo_dag',
     description='My Airflow MLOps project DAG',
     tags=['MLOps_project_airflow_datascientest'],
-    schedule_interval='0 0 1 6,12 *',
-    start_date=datetime(2023, 6, 1),
+    #schedule_interval='0 0 1 6,12 *',
+    #start_date=datetime(2023, 6, 1),
     default_args={
         'owner': 'airflow',
         'start_date': days_ago(0),
     }
 )
+
+
+#task 1_0: test connexion BD
+
 
 
 # Task 1_1
@@ -144,6 +150,14 @@ def write_metrics_all(task_instance):
         test_unitaire.write_metric(d, test_unitaire.filename)
 
 
+task_1_0 = PythonOperator(
+    task_id='test_connection_BD',
+    python_callable=db.get_data_from_db,
+    dag=my_immo_dag,
+    op_kwargs={'c': {'id_transaction':107332,'collec':'Transactions'}}
+)
+
+
 task_1_1 = PythonOperator(
     task_id='import_new_data',
     python_callable=import_new_dataset.import_new_data_main,
@@ -174,6 +188,7 @@ task_4 = PythonOperator(
     dag=my_immo_dag
 )
 
+task_1_0 >> task_1_1
 task_1_1 >> task_1_2
 task_1_2 >> task_2
 task_2 >> task_3
