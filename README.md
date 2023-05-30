@@ -1,5 +1,5 @@
 # Immobilier France Prediction API
-Ce projet fournit une API pour prédire le prix d'un appartement en france en fonction des données géographiques, de la surface habitable et du nombre de pièces. L'API est construite à l'aide de FastAPI et la base de données est constitué de 1.4M transactions immobilières stockées sur MongoDB Atlas. Le serveur est exécuté avec Uvicorn.
+Ce projet fournit une API pour prédire le prix d'un appartement en france en fonction des données géographiques, de la surface habitable et du nombre de pièces. L'API est construite à l'aide de FastAPI et la base de données est constitué de 1.4M transactions immobilières de 2019 à aujourd'hui stockées sur MongoDB Atlas. Le serveur est exécuté avec Uvicorn.
 
 
 ## Data Source
