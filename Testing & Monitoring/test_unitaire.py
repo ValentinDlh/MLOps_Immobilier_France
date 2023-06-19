@@ -3,10 +3,8 @@ import db as db
 import json
 import pandas as pd
 
-filename = 'metrics.json'
 
 
-# parent_folder=''
 
 def get_metrics(f):
     with open(f, 'r') as file:
@@ -20,10 +18,6 @@ def write_metric(dic, f):
         json.dump(dic, json_file)
 
 
-#date_last_DB = get_metrics(filename)['date_last_DB']
-#nb_ligne_bd_Transactions = get_metrics(filename)['nb_ligne_bd_Transactions']
-#nb_ligne_bd_Tdb_Quartier = get_metrics(filename)['nb_ligne_bd_Tdb_Quartier']
-#df_rqt = pd.DataFrame(get_metrics(filename)['df_rqt_test_transaction'])
 
 
 def test_nb_ligne_BD(current_nb_row, collection):
@@ -38,9 +32,10 @@ def test_nb_ligne_BD(current_nb_row, collection):
 
 
 def test_rqt(df, collection):
+
     list_ville = df.Ville.to_list()
     y = int(df.ANNEE.unique()[0])
-    # print(type(y))
+
     l = []
     # calcul des resultats des requêtes avec les nouvelles données
     test = True
@@ -96,7 +91,7 @@ def test_rqt(df, collection):
             st = st + 'Ville ' + v + ' - prix_moyen KO: avant import = ' + str(
                 df[(df['Ville'] == v)].Prix_moyen.iloc[0]) + ' VS aprés import = ' + str(res['Prix_moyen']) + '\n'
             test = False
-    print(st)
+
 
     if test == True:
         return test, l
@@ -105,12 +100,3 @@ def test_rqt(df, collection):
         return test, l
 
 
-#d = {}
-#d['date_last_DB'] = str(dt.datetime.now())
-#test_nb_ligne_bd_Transactions, d['nb_ligne_bd_Transactions'] = test_nb_ligne_BD(nb_ligne_bd_Transactions,'Transactions')
-#test_nb_ligne_bd_Tdb_Quartier, d['nb_ligne_bd_Tdb_Quartier'] = test_nb_ligne_BD(nb_ligne_bd_Tdb_Quartier,'Tdb_Quartier')
-#test_df_rqt_test_transaction, d['df_rqt_test_transaction'] = test_rqt(df_rqt, 'Transactions')
-
-# écrire les valeurs
-#if (test_nb_ligne_bd_Transactions & test_nb_ligne_bd_Tdb_Quartier & test_df_rqt_test_transaction):
-    #write_metric(d, filename)
