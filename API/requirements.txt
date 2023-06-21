@@ -10,3 +10,4 @@ typing
 bcrypt
 geopandas
 shapely
+dotenv
