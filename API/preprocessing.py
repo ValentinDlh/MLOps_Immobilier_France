@@ -90,6 +90,8 @@ def data_selection(departement, ville, quartier, col, sous_dataset: bool, param_
     query = {"departement": int(departement), "NOM_COM": ville, "NOM_IRIS": {"$in": quartier}}
 
     transactions = db.extract_from_DB_to_df_with_condition(query, col)
+    if transactions==None :
+        return None
 
     # fonction generer_sous_dataset va prendre en compte les critères autres que geographique, à savoir : surface, n_pièces, vefa
     if sous_dataset:
@@ -120,7 +122,8 @@ def data_transformation(df):
 
 def generer_sous_dataset(df, surface, n_pieces, vefa, col, zscore=2.0, percent_ecart=0.25):
     # lim_nb_ligne est le nombre de ligne maximal du sous dataset final qui sera utiliser pour faire une prediction
-
+    if df.empty:
+        return None
     # percent_ecart est le pourcentage d'écart en surface que l'on va utiliser pour filtrer les transactions d'intéret - ex un appartement de 30m² +ou- 25%
     ecart_surface = surface * percent_ecart
 
@@ -141,10 +144,7 @@ def generer_sous_dataset(df, surface, n_pieces, vefa, col, zscore=2.0, percent_e
     if n_pieces !=None:
         df = df[df['n_pieces'] == n_pieces]
 
-    #prix_med_m2 = df['prix_m2'].median()
-    #df['sort_prix'] = df.prix_m2.apply(lambda x: abs(x - prix_med_m2))l
 
     # On trie le dataset selon les transactions les plus proches des critères fournies par le demandeurs et selon les prix les plus proches de la mediane
-    #df = df.sort_values(by=['semester', 'sort_vefa', 'sort_prix', 'sort_nb_p'],ascending=(False, False, True, True)).head(lim_nb_ligne)
     df = df[col]
     return df
