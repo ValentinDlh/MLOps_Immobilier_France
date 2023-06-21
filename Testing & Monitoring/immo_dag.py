@@ -11,8 +11,6 @@ my_immo_dag = DAG(
     dag_id='immo_dag',
     description='My Airflow MLOps project DAG',
     tags=['MLOps_project_airflow_datascientest'],
-    #schedule_interval='0 0 1 6,12 *',
-    #start_date=datetime(2023, 6, 1),
     default_args={
         'owner': 'airflow',
         'start_date': days_ago(0),
@@ -207,14 +205,14 @@ task_1_1 = PythonOperator(
     python_callable=import_new_data_main,
     dag=my_immo_dag
 )
-'''
+
 
 task_1_2 = PythonOperator(
     task_id='generer_tdb_quartier',
     python_callable=Tdb_ville,
     dag=my_immo_dag
 )
-
+'''
 
 task_2 = PythonOperator(
     task_id='get_metrics_all',
@@ -235,9 +233,8 @@ task_4 = PythonOperator(
 )
 
 #task_1_0 >> task_1_1
-task_1_0>> task_1_2
 #task_1_1 >> task_1_2
-
-task_1_2 >> task_2
+task_1_0>> task_2
+#task_1_2 >> task_2
 task_2 >> task_3
 task_3 >> task_4
