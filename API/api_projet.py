@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from typing import List,Optional
 import prediction as pred
 import preprocessing
-from db import collection
+import datetime
 
 # Importation des données
 
@@ -74,7 +74,6 @@ def current_user(username: str = Depends(get_current_user)):
 def get_index():
     return "L'API est fonctionnelle"
 
-
 @api.get('/departements', tags=["Géolocalisation"], description="Obtenir les départements", responses=responses)
 def get_departements():
     departements = {}
@@ -96,15 +95,26 @@ def get_quartiers(ville: str):
 @api.get('/transactions', tags=["Transactions"], description="Retourne les transactions spécifiques à une période et à une ville: "+description_transactions, responses=responses)
 def get_transactions(departement : str, ville : str, quartier : List[str] = Query(None)):
     p={}
-
+    error={}
+    ville=ville.upper()
+    quartier=[s.upper() for s in quartier]
     df = preprocessing.data_selection(departement, ville, quartier, col, sous_dataset=False, param_sous_data=p)
     #df = df[["date_transaction", "prix", "departement", "adresse", "ville", "code_postal", "vefa", "n_pieces", "surface_habitable", "NOM_IRIS"]]
+    if df==None:
+        error['error']={'No data with parameters sent'}
+        return error
     return df.to_dict(orient='records')
 
 @api.get('/predictions', tags=["Prédictions"], description="Retourne la prédiction du prix d'un appartement avec un intervalle de confiance", responses=responses)
 def get_prediction(departement: str, ville : str,  surface_habitable : int,vefa : Optional[bool]=None, n_pieces : Optional[int]=None, quartier : List[str]=Query(None)):
-
     p = {}
+    error = {}
+    ville=ville.upper()
+    quartier=[s.upper() for s in quartier]
+
+    if pred.prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable, col)==None :
+        error['error']={'No data with parameters sent'}
+        return error
 
     prediction_prix, mae_train, mae_test, model, params, nb, score = pred.prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable, col)
     p["prediction_prix"] = int(prediction_prix[0])
@@ -123,6 +133,8 @@ def get_prediction(departement: str, ville : str,  surface_habitable : int,vefa 
 def get_tendance(departement: int, ville : str, annee_fin : Optional[int]=None):
     res={}
     error={}
+    if annee_fin==None:
+        annee_fin=(datetime.datetime.now().year)-1
 
     if((annee_fin<2019) | (annee_fin>2022)):
         error['error']={'année_fin doit être compris entre 2019 et 2022'}
@@ -130,7 +142,7 @@ def get_tendance(departement: int, ville : str, annee_fin : Optional[int]=None):
     else:
         res=preprocessing.get_tendance_ville(departement,ville,annee_fin)
         if res==None :
-            error['error']={'vérifier les paramètres saisis'}
+            error['error']={'No data with parameters sent'}
             return error
 
     return res
