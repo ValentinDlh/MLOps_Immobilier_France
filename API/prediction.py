@@ -18,6 +18,8 @@ def prediction(departement, ville, quartier, vefa, n_pieces, surface_habitable, 
 
     # séléction des données pertinentes en fonction des critères du dictionnaire p
     df = data_selection(departement, ville, quartier, col, sous_dataset=True, param_sous_data=p)
+    if df ==None :
+        return None
 
     # data_selection(departement, ville, quartier, col)
     df_scaled, scaler = data_transformation(df)
