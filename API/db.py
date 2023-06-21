@@ -1,7 +1,7 @@
 import pandas as pd
 import json
 from bson.json_util import dumps
-
+#import bson
 import numpy as np
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -9,23 +9,42 @@ from pymongo.server_api import ServerApi
 #from airflow.providers.http.operators.http import SimpleHttpOperator
 #from airflow.providers.mongo.hooks.mongo import MongoHook
 from datetime import datetime,timedelta
+from dotenv import load_dotenv
+import os
 
-#def connecter():
-#    hook = MongoHook(mongo_conn_id='mongo_default')
-#    client = hook.get_conn()
-#    database_immo = client['Immo']
-#   #print(client.server_info())
-#    return database_immo
 
+
+load_dotenv()
+
+
+#----/!\----
+#dans repo .gitgnore
+#dans gitgnore mettre le .env
+#----/!\----
+
+#----/!\----
+#log.info plutot que print si pas d'affichage des print
+#----/!\----
+
+
+
+'''
+def connecter():
+    hook = MongoHook(mongo_conn_id='mongo_default')
+    client = hook.get_conn()
+    database_immo = client['Immo']
+    #print(client.server_info())
+    return database_immo
+'''
 
 # Connection à la BD
 #"mongodb+srv://vlago:DE_Immo_2023@cluster0.fv699mr.mongodb.net/?retryWrites=true&w=majority"
 
-#Connection à la BD
-uri="mongodb+srv://vlago:DE_Immo_2023@cluster0.fv699mr.mongodb.net/?retryWrites=true&w=majority"
+uri = os.getenv("DB_URI")#"mongodb+srv://vlago:DE_Immo_2023@cluster0.fv699mr.mongodb.net/"
 client = MongoClient(uri, server_api=ServerApi('1'))
 db=client['Immo']
-collection=db['Transactions']
+
+collection = db['Transactions']
 
 
 # Obtenir une transaction par son ID
@@ -47,6 +66,9 @@ def rqt_bd(rqt,col):
 
 def extract_from_DB_to_df_with_condition(condition: dict, col):
     df = pd.DataFrame.from_dict(json.loads(dumps(collection.find(condition))))
+    if df.empty :
+        return None
+
     df.set_index(['id_transaction'])
     # transformation de la date en format datetime
     df["date_transaction"] = df.date_transaction.apply(lambda x: pd.to_datetime(x['$date'], errors='coerce'))
